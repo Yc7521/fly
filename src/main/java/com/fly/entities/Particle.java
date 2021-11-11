@@ -6,9 +6,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 
 public class Particle extends Moveable implements Renderable {
-    protected float r = 2; // 半径
+    protected float radius = 2; // 半径
     protected Color color = Color.rgb(255, 0, 0); // 颜色
-    protected float alive = .5f; // 生存时间
+    protected float alive = .25f; // 生存时间
 
     public Particle(float x, float y, float speed, float direction) {
         super(x, y, speed, direction);
@@ -19,15 +19,15 @@ public class Particle extends Moveable implements Renderable {
     }
 
     public float getAlive() {
-        alive -= 1 / Game.fps;
         return alive;
     }
 
     @Override
     public void render(GraphicsContext g) {
+        alive -= 1 / Game.fps;
         Paint stroke = g.getFill();
         g.setFill(color);
-        g.fillOval(x - r, y - r, r, r);
+        g.fillOval(x - radius, y - radius, radius, radius);
         g.setFill(stroke);
     }
 }

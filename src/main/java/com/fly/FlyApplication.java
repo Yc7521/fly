@@ -3,6 +3,7 @@ package com.fly;
 import com.fly.game.Game;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -16,7 +17,12 @@ import static com.fly.game.Game.*;
 import static com.fly.game.Key.KeyMapping.*;
 
 public class FlyApplication extends Application {
+    // 4 dir: [up, down, left, right]
     public static final boolean[] dirPressed = new boolean[4];
+    // 4 key: [fight, fight_b]
+    public static final boolean[] keyPressed = new boolean[4];
+    // mouse pos
+    public static Point2D mouse;
 
     public static void main(String[] args) {
         launch();
@@ -37,6 +43,8 @@ public class FlyApplication extends Application {
                 dirPressed[2] = true;
             if (in(key, right))
                 dirPressed[3] = true;
+            if (in(key, fight))
+                keyPressed[0] = true;
         });
         scene.setOnKeyReleased(event -> {
             KeyCode key = event.getCode();
@@ -48,9 +56,25 @@ public class FlyApplication extends Application {
                 dirPressed[2] = false;
             if (in(key, right))
                 dirPressed[3] = false;
+            if (in(key, fight))
+                keyPressed[0] = false;
+        });
+        scene.setOnMousePressed(event -> {
+            if (event.getButton() == fight_b) {
+                keyPressed[1] = true;
+                mouse = new Point2D(event.getX(), event.getY());
+            }
+        });
+        scene.setOnMouseReleased(event -> {
+            if (event.getButton() == fight_b) {
+                keyPressed[1] = false;
+            }
+        });
+        scene.setOnMouseDragged(event -> {
+            mouse = new Point2D(event.getX(), event.getY());
         });
 
-        Game.canvas = (Canvas) load.lookup("#canvas");
+        canvas = (Canvas) load.lookup("#canvas");
         canvas.setWidth(maxX);
         canvas.setHeight(maxY);
 
@@ -60,6 +84,7 @@ public class FlyApplication extends Application {
 
         stage.show();
 
+        Game.init();
         ScheduledFuture<?> tick = Game.tick(Game::render);
 //        try {
 //            Object o = tick.get();

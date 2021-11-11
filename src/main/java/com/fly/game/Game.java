@@ -1,16 +1,23 @@
 package com.fly.game;
 
+import com.fly.entities.Collideable;
+import com.fly.entities.bullet.BulletBase;
+import com.fly.entities.effect.EffectBase;
+import com.fly.entities.env.wall.TpWall;
+import com.fly.entities.env.wall.WallBase;
+import com.fly.entities.unit.Units;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 
+import java.util.ArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.fly.FlyApplication.dirPressed;
+import static com.fly.FlyApplication.*;
 
 public class Game {
     public static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(8);
@@ -20,6 +27,9 @@ public class Game {
     public static boolean invertY = true;
     public static Canvas canvas;
     public static volatile boolean needUpdate = true;
+    public static ArrayList<BulletBase> bullets = new ArrayList<>();
+    public static ArrayList<EffectBase> effects = new ArrayList<>();
+    public static ArrayList<WallBase> walls = new ArrayList<>();
     private static volatile AtomicInteger times = new AtomicInteger(1);
     private static volatile ReentrantLock lock = new ReentrantLock();
 
@@ -27,17 +37,27 @@ public class Game {
         return executor.scheduleAtFixedRate(runnable, 0, (long) (1000 / fps), TimeUnit.MILLISECONDS);
     }
 
+    /**
+     *
+     */
+    public static void init() {
+        walls.add(new WallBase(0, 0, 20, maxY));
+        walls.add(new WallBase(maxX - 20, 0, 20, maxY));
+        walls.add(new TpWall(20, 0, maxX - 40, 20, -1, maxY - 40));
+        walls.add(new TpWall(20, maxY - 20, maxX - 40, 20, -1, 40));
+    }
+
+    /**
+     * do this function per tick(1s / 60(FPS))
+     */
     public static void render() {
         try {
             if (lock.tryLock()) {
                 int t = times.get();
                 times.set(1);
-                for (int i = 0; i < t; i++) {
-                    player.move(dirPressed);
-                }
-                GraphicsContext context = canvas.getGraphicsContext2D();
-                context.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-                player.getUnits().render(context);
+                keyEventHandle(t);
+                collision();
+                render(getGraphicsContext());
                 lock.unlock();
             } else {
                 times.incrementAndGet();
@@ -45,5 +65,62 @@ public class Game {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static void keyEventHandle(int times) {
+        for (int i = 0; i < times; i++) {
+            player.move(dirPressed);
+            if (keyPressed[0])
+                player.shot();
+            if (keyPressed[1])
+                player.shot(mouse);
+        }
+    }
+
+    private static GraphicsContext getGraphicsContext() {
+        GraphicsContext context = canvas.getGraphicsContext2D();
+        context.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        return context;
+    }
+
+    private static void collision() {
+        final Units units = player.getUnits();
+        final Rectangle2D rectangle = units.getRectangle();
+        for (Collideable bullet : bullets) {
+            if (bullet.intersect(rectangle)) {
+                bullet.onCollided(units);
+                units.onCollided(bullet);
+            }
+        }
+        for (WallBase wall : walls) {
+            if (wall.intersect(rectangle)) {
+                wall.onCollided(units);
+                units.onCollided(wall);
+            }
+        }
+    }
+
+    private static void render(GraphicsContext context) {
+        // render Effects
+        for (EffectBase base : effects) {
+            base.render(context);
+        }
+        effects.removeIf(EffectBase::isEnd);
+
+        // render Walls
+        for (WallBase base : walls) {
+            base.render(context);
+        }
+
+        // render Bullets
+        for (BulletBase base : bullets) {
+            base.render(context);
+        }
+        bullets.removeIf(particle -> particle.getAlive() < 0);
+
+        // render Player
+        final Units units = player.getUnits();
+        units.move();
+        units.render(context);
     }
 }

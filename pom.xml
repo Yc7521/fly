@@ -4,10 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.xyc</groupId>
+    <groupId>com</groupId>
     <artifactId>fly</artifactId>
     <version>1.0</version>
     <name>fly</name>
+    <packaging>jlink</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -40,6 +41,14 @@
         </dependency>
     </dependencies>
 
+    <!-- 配置这个地址可以下载到maven-jlink-plugin插件3.0.0-alpha-2-SNAPSHOT的版本 -->
+    <pluginRepositories>
+        <pluginRepository>
+            <url>https://repository.apache.org/content/repositories/snapshots</url>
+            <id>apache-snapshots</id>
+        </pluginRepository>
+    </pluginRepositories>
+
     <build>
         <plugins>
             <plugin>
@@ -60,10 +69,25 @@
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.xyc.fly/com.fly.FlyApplication</mainClass>
+                            <stripDebug>true</stripDebug>
+                            <compress>2</compress>
+                            <jlinkImageName>fly</jlinkImageName>
+<!--                            <jlinkZipName>flyzip</jlinkZipName>-->
+                            <launcher>launcher</launcher>
+                            <mainClass>com.fly/com.fly.FlyApplication</mainClass>
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jlink-plugin</artifactId>
+                <version>3.0.0-alpha-2-SNAPSHOT</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <!-- 配置启动脚本 -->
+                    <launcher>data-man=io.dataman/io.dataman.SwingMain</launcher>
+                </configuration>
             </plugin>
         </plugins>
     </build>
