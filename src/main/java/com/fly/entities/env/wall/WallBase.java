@@ -29,6 +29,13 @@ public class WallBase implements Renderable, Collideable {
         this.color = color;
     }
 
+    protected static void backUnit(Units units) {
+        final float maxSpeed = (units.getSpeed() < 0 ? 1 : -1) * units.getMaxSpeed();
+        double radians = Math.toRadians(units.getDirection());
+        units.move((float) (maxSpeed * Math.sin(radians)),
+                (float) (maxSpeed * Math.cos(radians)));
+    }
+
     @Override
     public void render(GraphicsContext g) {
         Paint stroke = g.getFill();
@@ -40,19 +47,12 @@ public class WallBase implements Renderable, Collideable {
     }
 
     @Override
-    public void onCollided(Collideable collideable) {
+    public void onCollided(Collideable collideable) throws Exception {
         if (collideable instanceof Units units) {
-            System.out.println("撞墙了");
+//            System.out.println("撞墙了");
             backUnit(units);
             units.setSpeed(0);
         }
-    }
-
-    protected static void backUnit(Units units) {
-        final float maxSpeed = (units.getSpeed() < 0 ? 1 : -1) * units.getMaxSpeed();
-        double radians = Math.toRadians(units.getDirection());
-        units.move((float) (maxSpeed * Math.sin(radians)),
-                (float) (maxSpeed * Math.cos(radians)));
     }
 
     @Override

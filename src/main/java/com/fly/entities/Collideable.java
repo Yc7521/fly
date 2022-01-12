@@ -12,7 +12,7 @@ public interface Collideable {
         return getRectangle().intersects(rectangle2D);
     }
 
-    void onCollided(Collideable collideable);
+    void onCollided(Collideable collideable) throws Exception;
 
     Point2D getCenter();
 

@@ -23,11 +23,11 @@ public class TpWall extends WallBase {
     }
 
     @Override
-    public void onCollided(Collideable collideable) {
+    public void onCollided(Collideable collideable) throws Exception {
         if (collideable instanceof Units units) {
             System.out.println("传送了");
             WallBase.backUnit(units);
-            Game.effects.add(new MoveEffect(
+            Game.addEffect(new MoveEffect(
                     units,
                     toX < 0 ? units.getX() : toX,
                     toY < 0 ? units.getY() : toY,

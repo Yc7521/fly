@@ -17,15 +17,35 @@ import static com.fly.game.Game.*;
 import static com.fly.game.Key.KeyMapping.*;
 
 public class FlyApplication extends Application {
-    // 4 dir: [up, down, left, right]
+    /**
+     * 4 dir: [up, down, left, right]
+     */
     public static final boolean[] dirPressed = new boolean[4];
-    // 4 key: [fight, fight_b]
+    /**
+     * 4 key: [shift, fight]
+     */
     public static final boolean[] keyPressed = new boolean[4];
+    /**
+     * 4 key: [fight_b]
+     */
+    public static final boolean[] btnPressed = new boolean[4];
     // mouse pos
     public static Point2D mouse;
 
     public static void main(String[] args) {
         launch();
+    }
+
+    public static void setKey(boolean pressed,
+                              boolean[] keys,
+                              KeyCode key,
+                              KeyCode[][] mapping) {
+        for (int i = 0; i < mapping.length; i++) {
+            if (in(key, mapping[i])) {
+                keys[i] = pressed;
+                return;
+            }
+        }
     }
 
     @Override
@@ -35,39 +55,26 @@ public class FlyApplication extends Application {
         Scene scene = new Scene(load, maxX, maxY);
         scene.setOnKeyPressed(event -> {
             KeyCode key = event.getCode();
-            if (in(key, up))
-                dirPressed[0] = true;
-            if (in(key, down))
-                dirPressed[1] = true;
-            if (in(key, left))
-                dirPressed[2] = true;
-            if (in(key, right))
-                dirPressed[3] = true;
-            if (in(key, fight))
-                keyPressed[0] = true;
+            setKey(true, dirPressed, key, dirMapping);
+            setKey(true, keyPressed, key, keyMapping);
+            if (in(key, escape)) {
+                System.exit(0);
+            }
         });
         scene.setOnKeyReleased(event -> {
             KeyCode key = event.getCode();
-            if (in(key, up))
-                dirPressed[0] = false;
-            if (in(key, down))
-                dirPressed[1] = false;
-            if (in(key, left))
-                dirPressed[2] = false;
-            if (in(key, right))
-                dirPressed[3] = false;
-            if (in(key, fight))
-                keyPressed[0] = false;
+            setKey(false, dirPressed, key, dirMapping);
+            setKey(false, keyPressed, key, keyMapping);
         });
         scene.setOnMousePressed(event -> {
             if (event.getButton() == fight_b) {
-                keyPressed[1] = true;
+                btnPressed[0] = true;
                 mouse = new Point2D(event.getX(), event.getY());
             }
         });
         scene.setOnMouseReleased(event -> {
             if (event.getButton() == fight_b) {
-                keyPressed[1] = false;
+                btnPressed[0] = false;
             }
         });
         scene.setOnMouseDragged(event -> {

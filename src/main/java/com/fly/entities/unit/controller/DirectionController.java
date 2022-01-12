@@ -6,6 +6,7 @@ import com.fly.entities.unit.Units;
 public class DirectionController implements IController {
     private static final float[][] mapping = {{315, 0, 45}, {270, 0, 90}, {225, 180, 135},};
     private final Units units;
+    private boolean accelerate;
 
     public DirectionController(Units units) {
         this.units = units;
@@ -31,7 +32,7 @@ public class DirectionController implements IController {
             units.rotate(diff);
 
         if (diffAbs < 10) {
-            units.accelerate(1 - diffAbs / 10);
+            units.accelerate(1 - diffAbs / 10, accelerate);
         } else {
             units.decelerate(0.1f);
         }
@@ -44,7 +45,7 @@ public class DirectionController implements IController {
 
     @Override
     public void onAcc(boolean on) {
-
+        accelerate = on;
     }
 
     @Override

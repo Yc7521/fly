@@ -33,3 +33,4 @@ public class MoveEffect extends EffectBase {
         g.strokeOval(center.getX() - r, center.getY() - r, 2 * r, 2 * r);
     }
 }
+

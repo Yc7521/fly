@@ -3,7 +3,7 @@ package com.fly.entities;
 public abstract class Moveable implements Renderable {
     protected float x, y; // 位置
     protected float speed = 0;
-    protected float direction = 0; // 方向 0-360
+    protected float direction = 0; // 方向 0-360 0:down;180:up
 
     public Moveable() {
     }

@@ -12,6 +12,8 @@ module com.fly {
     exports com.fly.entities;
     exports com.fly.entities.bullet;
     exports com.fly.entities.effect;
+    exports com.fly.entities.env.wall;
+    exports com.fly.entities.unit;
 
     opens com.fly.game to javafx.fxml;
     opens com.fly.game.net to javafx.fxml;

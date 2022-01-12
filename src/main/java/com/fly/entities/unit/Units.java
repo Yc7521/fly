@@ -16,7 +16,7 @@ import java.util.LinkedList;
 public class Units extends Moveable implements Collideable {
     protected final int radius = 10; // 半径
     public LinkedList<Particle> particles = new LinkedList<>();
-    protected float maxSpeed = 3; // 速度
+    protected float maxSpeed = 3, accSpeed = 5; // 速度
     protected float acceleration = 2; // 加速
     protected float rotateSpeed = 180; // 旋转速度 0-360
     protected Style style = Style.triangle; // 样式
@@ -77,13 +77,14 @@ public class Units extends Moveable implements Collideable {
         rotate(direction - this.direction);
     }
 
-    public void accelerate() {
-        accelerate(1);
+    public void accelerate(boolean shift) {
+        accelerate(1, shift);
     }
 
-    public void accelerate(float per) {
+    public void accelerate(float per, boolean shift) {
         speed += Interp.linear.apply(0, acceleration / Game.fps, per);
-        if (speed > maxSpeed) speed = maxSpeed;
+        final float max = shift ? accSpeed : maxSpeed;
+        if (speed > max) speed = max;
         addParticle(direction + 180);
     }
 
@@ -106,6 +107,7 @@ public class Units extends Moveable implements Collideable {
     public void back(float per) {
         speed -= Interp.linear.apply(0, acceleration / Game.fps, per);
         if (speed < -maxSpeed) speed = -maxSpeed;
+        addParticle(direction + 180, true);
     }
 
     public float getMaxSpeed() {
@@ -169,8 +171,12 @@ public class Units extends Moveable implements Collideable {
     }
 
     private void addParticle(float dir) {
+        addParticle(dir, false);
+    }
+
+    private void addParticle(float dir, boolean reverse) {
         final int shake = 20;
-        final float minSpeed = acceleration;
+        final float minSpeed = (reverse ? 0.5f : 1f) * acceleration;
         final float maxSpeed = 1.5f * acceleration;
         double radians = Math.toRadians(dir);
         float dx = (float) Math.sin(radians);
@@ -179,7 +185,7 @@ public class Units extends Moveable implements Collideable {
             particles.add(new Particle(
                     x + radius * dx,
                     y + radius * dy,
-                    Interp.linear.apply(minSpeed, maxSpeed, (float) Math.random()),
+                    (reverse ? -1 : 1) * Interp.linear.apply(minSpeed, maxSpeed, (float) Math.random()),
                     Interp.linear.apply(dir - shake, dir + shake, (float) Math.random())
             ));
         }
@@ -198,12 +204,17 @@ public class Units extends Moveable implements Collideable {
         double radians = Math.toRadians(dir);
         float dx = (float) Math.sin(radians);
         float dy = (float) Math.cos(radians);
-        particles.add(new BulletBase(
-                x + radius * dx,
-                y + radius * dy,
-                Interp.linear.apply(minSpeed, maxSpeed, (float) Math.random()),
-                Interp.linear.apply(dir - shake, dir + shake, (float) Math.random())
-        ));
+        try {
+            Game.addBullets(new BulletBase(
+                    this,
+                    x + radius * dx,
+                    y + radius * dy,
+                    Interp.linear.apply(minSpeed, maxSpeed, (float) Math.random()),
+                    Interp.linear.apply(dir - shake, dir + shake, (float) Math.random())
+            ));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void shot() {

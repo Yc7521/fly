@@ -5,6 +5,7 @@ import com.fly.entities.unit.Units;
 // TODO: fix this use IController
 public class RotateController implements IController {
     private final Units units;
+    private boolean accelerate = false;
 
     public RotateController(Units units) {
         this.units = units;
@@ -19,15 +20,15 @@ public class RotateController implements IController {
             case 0 -> {
                 if (units.getSpeed() > 0) {
                     units.decelerate();
-                }else{
+                } else {
                     units.back();
                 }
             }
             case 2 -> {
                 if (units.getSpeed() < 0) {
                     units.decelerate();
-                }else{
-                    units.accelerate();
+                } else {
+                    units.accelerate(accelerate);
                 }
             }
         }
@@ -44,7 +45,7 @@ public class RotateController implements IController {
 
     @Override
     public void onAcc(boolean on) {
-
+        accelerate = on;
     }
 
     @Override
