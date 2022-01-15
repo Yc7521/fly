@@ -1,12 +1,13 @@
 package com.fly.game;
 
-import com.fly.entities.Collideable;
 import com.fly.entities.bullet.BulletBase;
 import com.fly.entities.bullet.Stone;
 import com.fly.entities.effect.EffectBase;
+import com.fly.entities.env.wall.RepulsionAble;
 import com.fly.entities.env.wall.TpWall;
 import com.fly.entities.env.wall.WallBase;
 import com.fly.entities.unit.Units;
+import com.fly.game.UI.Frame;
 import com.fly.math.Interp;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.Canvas;
@@ -22,18 +23,20 @@ import java.util.concurrent.locks.ReentrantLock;
 import static com.fly.FlyApplication.*;
 
 public class Game {
+    //    public static volatile boolean needUpdate = true;
+    private static final ArrayList<BulletBase> bullets = new ArrayList<>();
+    private static final ArrayList<EffectBase> effects = new ArrayList<>();
+    private static final ArrayList<WallBase> walls = new ArrayList<>();
+    private static final AtomicInteger times = new AtomicInteger(1);
+    private static final ReentrantLock lock = new ReentrantLock();
     public static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(8);
     public static int maxX = 1280, maxY = 720;
     public static float fps = 60;
     public static Player player = new Player();
     public static boolean invertY = true;
     public static Canvas canvas;
-    //    public static volatile boolean needUpdate = true;
-    private static ArrayList<BulletBase> bullets = new ArrayList<>();
-    private static ArrayList<EffectBase> effects = new ArrayList<>();
-    private static ArrayList<WallBase> walls = new ArrayList<>();
-    private static volatile AtomicInteger times = new AtomicInteger(1);
-    private static volatile ReentrantLock lock = new ReentrantLock();
+    public static ScheduledFuture<?> renderTask;
+    public static Frame frame;
 
     public static ScheduledFuture<?> tick(Runnable runnable) {
         return executor.scheduleAtFixedRate(runnable, 0, (long) (1000 / fps), TimeUnit.MILLISECONDS);
@@ -46,17 +49,22 @@ public class Game {
     /**
      *
      */
-    public static void init() {
-        walls.add(new WallBase(0, 0, 20, maxY));
-        walls.add(new WallBase(maxX - 20, 0, 20, maxY));
-        walls.add(new TpWall(20, 0, maxX - 40, 10, -1, maxY - 40));
-        walls.add(new TpWall(20, maxY - 20, maxX - 40, 20, -1, 40));
+    public static void init() throws InterruptedException {
+        frame = new Frame();
+        addWall(new WallBase(0, 0, 20, maxY, RepulsionAble.Style.VERTICAL));
+        addWall(new WallBase(maxX - 20, 0, 20, maxY, RepulsionAble.Style.VERTICAL));
+        addWall(new TpWall(20, 0, maxX - 40, 10, -1, maxY - 40, RepulsionAble.Style.HORIZONTAL));
+        addWall(new TpWall(20, maxY - 20, maxX - 40, 20, -1, 40, RepulsionAble.Style.HORIZONTAL));
         tick(() -> {
             // make a Stone
             // take a random x in [30, maxX-30]
             final float x = Interp.linear.apply(30, maxX - 30, (float) Math.random());
             final Stone stone = new Stone(x, 40, 4, Interp.linear.apply(-20, +20, (float) Math.random()));
-            Game.bullets.add(stone);
+            try {
+                Game.addBullets(stone);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }, 30);
     }
 
@@ -78,7 +86,8 @@ public class Game {
                     lock.unlock();
                 }
             } else {
-                times.incrementAndGet();
+                int n = times.incrementAndGet();
+                if (n > 1) System.out.printf("skip %d frames%n", n);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -86,9 +95,7 @@ public class Game {
     }
 
     private static GraphicsContext getGraphicsContext() {
-        GraphicsContext context = canvas.getGraphicsContext2D();
-        context.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        return context;
+        return canvas.getGraphicsContext2D();
     }
 
     /**
@@ -141,6 +148,8 @@ public class Game {
      * be sure thread safe
      */
     private static void render(GraphicsContext context) {
+        context.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+//        System.out.println("render");
         // render Effects
         for (EffectBase base : effects) {
             base.render(context);
@@ -160,8 +169,9 @@ public class Game {
 
         // render Player
         final Units units = player.getUnits();
-        units.move();
         units.render(context);
+        frame.render(context);
+        units.move();
     }
 
     public static void addBullets(BulletBase bullet) throws InterruptedException {

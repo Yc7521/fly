@@ -5,7 +5,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 
-public class Particle extends Moveable implements Renderable {
+public class Particle extends MoveAble implements RenderAble {
     protected float radius = 2; // 半径
     protected Color color = Color.rgb(255, 0, 0); // 颜色
     protected float alive = .25f; // 生存时间

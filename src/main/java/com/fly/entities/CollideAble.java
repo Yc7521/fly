@@ -3,8 +3,8 @@ package com.fly.entities;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 
-public interface Collideable {
-    default boolean contains(Collideable collideable) {
+public interface CollideAble {
+    default boolean contains(CollideAble collideable) {
         return getRectangle().contains(collideable.getCenter());
     }
 
@@ -12,7 +12,7 @@ public interface Collideable {
         return getRectangle().intersects(rectangle2D);
     }
 
-    void onCollided(Collideable collideable) throws Exception;
+    void onCollided(CollideAble collideable) throws Exception;
 
     Point2D getCenter();
 

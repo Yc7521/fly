@@ -2,6 +2,6 @@ package com.fly.entities;
 
 import javafx.scene.canvas.GraphicsContext;
 
-public interface Renderable {
+public interface RenderAble {
     void render(GraphicsContext g);
 }

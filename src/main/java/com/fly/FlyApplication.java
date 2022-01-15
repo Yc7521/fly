@@ -11,7 +11,6 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.concurrent.ScheduledFuture;
 
 import static com.fly.game.Game.*;
 import static com.fly.game.Key.KeyMapping.*;
@@ -77,9 +76,7 @@ public class FlyApplication extends Application {
                 btnPressed[0] = false;
             }
         });
-        scene.setOnMouseDragged(event -> {
-            mouse = new Point2D(event.getX(), event.getY());
-        });
+        scene.setOnMouseDragged(event -> mouse = new Point2D(event.getX(), event.getY()));
 
         canvas = (Canvas) load.lookup("#canvas");
         canvas.setWidth(maxX);
@@ -91,8 +88,12 @@ public class FlyApplication extends Application {
 
         stage.show();
 
-        Game.init();
-        ScheduledFuture<?> tick = Game.tick(Game::render);
+        try {
+            Game.init();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        renderTask = Game.tick(Game::render);
 //        try {
 //            Object o = tick.get();
 //        } catch (InterruptedException | ExecutionException e) {

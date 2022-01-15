@@ -1,16 +1,15 @@
 package com.fly.entities.bullet;
 
-import com.fly.entities.Collideable;
+import com.fly.entities.CollideAble;
 import com.fly.entities.Particle;
-import com.fly.entities.env.wall.WallBase;
 import com.fly.entities.unit.Units;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.paint.Color;
 
-public class BulletBase extends Particle implements Collideable {
-    private int damage;
-    private Units owner;
+public class BulletBase extends Particle implements CollideAble {
+    protected int damage;
+    protected Units owner;
 
     {
         radius = 10;
@@ -28,12 +27,10 @@ public class BulletBase extends Particle implements Collideable {
     }
 
     @Override
-    public void onCollided(Collideable collideable) throws Exception {
+    public void onCollided(CollideAble collideable) throws Exception {
         if (owner != collideable && collideable instanceof Units units) {
             System.out.println("中弹了");
             units.damage(getDamage());
-            alive = -1;
-        } else if (collideable instanceof WallBase wall) {
             alive = -1;
         }
     }

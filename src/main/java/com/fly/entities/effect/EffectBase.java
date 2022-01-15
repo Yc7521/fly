@@ -1,10 +1,10 @@
 package com.fly.entities.effect;
 
-import com.fly.entities.Renderable;
+import com.fly.entities.RenderAble;
 import com.fly.game.Game;
 import javafx.scene.canvas.GraphicsContext;
 
-public class EffectBase implements Renderable {
+public class EffectBase implements RenderAble {
     private float tick = 0;
     private boolean end = false;
 
@@ -27,5 +27,16 @@ public class EffectBase implements Renderable {
 
     protected void setEnd() {
         this.end = true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        return o != null && getClass() == o.getClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

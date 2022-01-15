@@ -1,20 +1,28 @@
 package com.fly.entities.effect;
 
+import com.fly.entities.Particle;
 import com.fly.math.Interp;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
+
+import java.util.LinkedList;
 
 public class BoomEffect extends EffectBase {
-    float x, y; // boom src
-    float time; // time needed spend
-    float radius; // effect radius
+    private final float x, y; // boom src
+    private final float time;
+    public LinkedList<Particle> particles = new LinkedList<>();
 
-    public BoomEffect(float x, float y, float time, float radius) {
+    public BoomEffect(float x, float y, float time, float speed) {
         this.x = x;
         this.y = y;
         this.time = time;
-        this.radius = radius;
+        for (int i = 0; i < 200; i++) {
+            particles.add(new Particle(
+                    x,
+                    y,
+                    Interp.linear.apply(speed, 1.5f * speed, (float) Math.random()),
+                    Interp.linear.apply(0, 359, (float) Math.random())
+            ));
+        }
     }
 
     @Override
@@ -24,10 +32,9 @@ public class BoomEffect extends EffectBase {
             setEnd();
         }
         super.render(g);
-        final float r = Interp.linear.apply(0, radius, time / this.time);
-        Paint stroke = g.getStroke();
-        g.setStroke(Color.RED);
-        g.strokeOval(x - r, y - r, 2 * r, 2 * r);
-        g.setStroke(stroke);
+        for (Particle particle : particles) {
+            particle.move();
+            particle.render(g);
+        }
     }
 }

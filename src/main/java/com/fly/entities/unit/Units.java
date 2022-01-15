@@ -1,20 +1,26 @@
 package com.fly.entities.unit;
 
-import com.fly.entities.Collideable;
-import com.fly.entities.Moveable;
+import com.fly.entities.CollideAble;
+import com.fly.entities.MoveAble;
 import com.fly.entities.Particle;
 import com.fly.entities.bullet.BulletBase;
-import com.fly.entities.env.wall.WallBase;
+import com.fly.entities.effect.EffectBase;
 import com.fly.game.Game;
 import com.fly.math.Interp;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 
-import java.util.LinkedList;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
-public class Units extends Moveable implements Collideable {
+public class Units extends MoveAble implements CollideAble {
+    protected final HashSet<EffectBase> effects = new HashSet<>();
     protected final int radius = 10; // 半径
+    private final ReentrantLock lock = new ReentrantLock();
     public LinkedList<Particle> particles = new LinkedList<>();
     protected float maxSpeed = 3, accSpeed = 5; // 速度
     protected float acceleration = 2; // 加速
@@ -58,6 +64,16 @@ public class Units extends Moveable implements Collideable {
     private static void add(double[] point, float val) {
         for (int j = 0; j < point.length; j++) {
             point[j] += val;
+        }
+    }
+
+    public void addEffect(EffectBase effect) throws InterruptedException {
+        if (lock.tryLock(100, TimeUnit.MILLISECONDS)) {
+            try {
+                effects.add(effect);
+            } finally {
+                lock.unlock();
+            }
         }
     }
 
@@ -138,6 +154,12 @@ public class Units extends Moveable implements Collideable {
     @Override
     public void render(GraphicsContext g) {
         tick++;
+        final Paint stroke = g.getStroke();
+        final Paint fill = g.getFill();
+        if (getHp() <= 20) {
+            g.setStroke(Color.RED);
+            g.setFill(Color.RED);
+        }
         switch (style) {
             case square -> {
                 double[][] p = {
@@ -165,9 +187,15 @@ public class Units extends Moveable implements Collideable {
                 g.strokePolygon(p[0], p[1], 3);
             }
         }
+        g.setStroke(stroke);
+        g.setFill(fill);
         for (Particle particle : particles) {
             particle.render(g);
         }
+        for (EffectBase base : effects) {
+            base.render(g);
+        }
+        effects.removeIf(EffectBase::isEnd);
     }
 
     private void addParticle(float dir) {
@@ -229,7 +257,11 @@ public class Units extends Moveable implements Collideable {
     }
 
     @Override
-    public void onCollided(Collideable collideable) {
+    public void onCollided(CollideAble collideable) {
+    }
+
+    public int getHp() {
+        return hp;
     }
 
     public void damage(int hp) {

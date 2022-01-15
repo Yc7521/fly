@@ -1,19 +1,19 @@
 package com.fly.entities;
 
-public abstract class Moveable implements Renderable {
+public abstract class MoveAble implements RenderAble {
     protected float x, y; // 位置
     protected float speed = 0;
     protected float direction = 0; // 方向 0-360 0:down;180:up
 
-    public Moveable() {
+    public MoveAble() {
     }
 
-    public Moveable(float x, float y) {
+    public MoveAble(float x, float y) {
         this.x = x;
         this.y = y;
     }
 
-    public Moveable(float x, float y, float speed, float direction) {
+    public MoveAble(float x, float y, float speed, float direction) {
         this.x = x;
         this.y = y;
         this.speed = speed;
