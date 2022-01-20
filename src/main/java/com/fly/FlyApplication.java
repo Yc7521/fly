@@ -11,6 +11,7 @@ import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import static com.fly.game.Game.*;
 import static com.fly.game.Key.KeyMapping.*;
@@ -47,10 +48,8 @@ public class FlyApplication extends Application {
         }
     }
 
-    @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(FlyApplication.class.getResource("fly-view.fxml"));
-        Parent load = fxmlLoader.load();
+
+    private Scene initScene(Stage stage, Parent load) {
         Scene scene = new Scene(load, maxX, maxY);
         scene.setOnKeyPressed(event -> {
             KeyCode key = event.getCode();
@@ -58,6 +57,20 @@ public class FlyApplication extends Application {
             setKey(true, keyPressed, key, keyMapping);
             if (in(key, escape)) {
                 System.exit(0);
+            }
+            if (in(key, restart)) {
+                try {
+                    renderTask.cancel(true);
+                    executor.shutdown();
+                    stage.hide();
+                    Thread.sleep(300);
+                    executor = new ScheduledThreadPoolExecutor(8);
+                    // reload
+                    start(stage);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.exit(0);
+                }
             }
         });
         scene.setOnKeyReleased(event -> {
@@ -77,6 +90,14 @@ public class FlyApplication extends Application {
             }
         });
         scene.setOnMouseDragged(event -> mouse = new Point2D(event.getX(), event.getY()));
+        return scene;
+    }
+
+    @Override
+    public void start(Stage stage) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(FlyApplication.class.getResource("fly-view.fxml"));
+        Parent load = fxmlLoader.load();
+        Scene scene = initScene(stage, load);
 
         canvas = (Canvas) load.lookup("#canvas");
         canvas.setWidth(maxX);
@@ -100,4 +121,5 @@ public class FlyApplication extends Application {
 //            e.printStackTrace();
 //        }
     }
+
 }

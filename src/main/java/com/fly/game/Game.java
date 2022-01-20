@@ -32,7 +32,7 @@ public class Game {
     public static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(8);
     public static int maxX = 1280, maxY = 720;
     public static float fps = 60;
-    public static Player player = new Player();
+    public static Player player;
     public static boolean invertY = true;
     public static Canvas canvas;
     public static ScheduledFuture<?> renderTask;
@@ -50,6 +50,11 @@ public class Game {
      *
      */
     public static void init() throws InterruptedException {
+        bullets.clear();
+        effects.clear();
+        walls.clear();
+        times.set(1);
+        player = new Player();
         frame = new Frame();
         addWall(new WallBase(0, 0, 20, maxY, RepulsionAble.Style.VERTICAL));
         addWall(new WallBase(maxX - 20, 0, 20, maxY, RepulsionAble.Style.VERTICAL));

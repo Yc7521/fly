@@ -11,6 +11,7 @@ public class KeyMapping {
     public static KeyCode[] shift = {KeyCode.SHIFT};
     public static KeyCode[] fight = {KeyCode.SPACE, KeyCode.F};
     public static KeyCode[] escape = {KeyCode.ESCAPE};
+    public static KeyCode[] restart = {KeyCode.R};
 
     public static KeyCode[][] dirMapping = {up, down, left, right};
     public static KeyCode[][] keyMapping = {shift, fight};

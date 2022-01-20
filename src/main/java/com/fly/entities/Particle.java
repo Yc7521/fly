@@ -6,7 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 
 public class Particle extends MoveAble implements RenderAble {
-    protected float radius = 2; // 半径
+    protected float radius = 1; // 半径
     protected Color color = Color.rgb(255, 0, 0); // 颜色
     protected float alive = .25f; // 生存时间
 
@@ -27,7 +27,7 @@ public class Particle extends MoveAble implements RenderAble {
         alive -= 1 / Game.fps;
         Paint stroke = g.getFill();
         g.setFill(color);
-        g.fillOval(x - radius, y - radius, radius, radius);
+        g.fillOval(x - radius, y - radius, 2 * radius, 2 * radius);
         g.setFill(stroke);
     }
 }
